@@ -33,7 +33,6 @@ public class PlayerController : MonoBehaviour
     private float _elapsedTime = 0f;
     private bool _isActive = false;
     private Rigidbody _playerRb;
-    private float _currentAngle;
     private PlayerStats _playerStats;
     private UIManager _uiManager;
 
@@ -62,11 +61,10 @@ public class PlayerController : MonoBehaviour
     {
         _playerDirection = new direction(false, false, false, false, false);
         _playerRb = GetComponent<Rigidbody>();
-        _currentAngle = gameObject.transform.rotation.y;
         _originalSpeed = _moveSpeed;
         _playerStats = PlayerStats.Instance;
         _uiManager = UIManager.Instance;
-        
+        _playerRb.maxAngularVelocity = 1f;
     }
 
     void Update()
@@ -77,6 +75,10 @@ public class PlayerController : MonoBehaviour
         _playerDirection.Right = Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
         if (Input.GetKeyDown(KeyCode.LeftShift))
             _playerDirection.Sprint = !_playerDirection.Sprint;
+        if (_playerDirection.Right)
+            turnRight();
+        if (_playerDirection.Left)
+             turnLeft();
         if (_moveSpeed == 0.5 && _isActive == false)
         {
             _speedParticles.SetActive(true);
@@ -107,10 +109,6 @@ public class PlayerController : MonoBehaviour
             goForward();
         if (_playerDirection.Backward)
             goReverse();
-        if (_playerDirection.Right)
-            turnRight();
-        if (_playerDirection.Left)
-             turnLeft();
         if (_playerDirection.Sprint && _playerDirection.Forward && _playerStats.getStaminaMeter() > 0f)
             startedSprinting();
         else if (!_playerDirection.Sprint || _playerStats.getStaminaMeter() == 0f
@@ -120,7 +118,10 @@ public class PlayerController : MonoBehaviour
             FireCannonRight();
         if (Input.GetMouseButtonDown(0) && _leftFiringTime > _firingCooldown)
             FireCannonLeft();
-
+        if (_playerRb.angularVelocity.y > 0f && !_playerDirection.Right)
+            _playerRb.AddTorque(transform.up * -_rotationSpeed);
+        if (_playerRb.angularVelocity.y < 0f && !_playerDirection.Left)
+            _playerRb.AddTorque(transform.up * _rotationSpeed);
     }
 
     void DetectObjectInFront()
@@ -161,16 +162,16 @@ public class PlayerController : MonoBehaviour
 
     void turnRight()
     {
-        _currentAngle += _rotationSpeed * Time.deltaTime;
-        Quaternion targetRotation = Quaternion.Euler(0, _currentAngle, 0);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 0.1f);
+        if (_playerRb.angularVelocity.y < 0f)
+            _playerRb.angularVelocity = new Vector3(0f, 0f, 0f);
+        _playerRb.AddTorque(transform.up * _rotationSpeed);
     }
 
     void turnLeft()
     {
-        _currentAngle -= _rotationSpeed * Time.deltaTime;
-        Quaternion targetRotation = Quaternion.Euler(0, _currentAngle, 0);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 0.1f);
+        if (_playerRb.angularVelocity.y > 0f)
+            _playerRb.angularVelocity = new Vector3(0f, 0f, 0f);
+        _playerRb.AddTorque(transform.up * -_rotationSpeed);
     }
 
     void startedSprinting()

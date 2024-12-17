@@ -43,7 +43,7 @@ public class Compass : MonoBehaviour
             player = shipCamera.transform;
         else if (camelCamera.activeInHierarchy)
             player = camelCamera.transform;
-        compassImage.uvRect = new Rect (player.localEulerAngles.y / 360f, 0f, 1f, 1f);
+        compassImage.uvRect = new Rect ((player.localEulerAngles.y + 175f) / 360f, 0f, 1f, 1f);
         foreach (QuestMarker marker in questMarkers)
         {
             marker.image.rectTransform.anchoredPosition = GetPosOnCompass(marker);

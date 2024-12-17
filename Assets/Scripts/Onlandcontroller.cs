@@ -27,7 +27,6 @@ public class Onlandcontroller : MonoBehaviour
     private float _elapsedTime = 0f;
     private bool _isActive = false;
     private Rigidbody _playerRb;
-    private float _currentAngle;
     private PlayerStats _playerStats;
     private struct direction 
     { 
@@ -51,10 +50,10 @@ public class Onlandcontroller : MonoBehaviour
     {
         _playerDirection = new direction(false, false, false, false, false);
         _playerRb = GetComponent<Rigidbody>();
-        _currentAngle = gameObject.transform.rotation.y;
         _originalSpeed = _moveSpeed;
         _playerStats = PlayerStats.Instance;
         _uiManager = UIManager.Instance;
+        _playerRb.maxAngularVelocity = 1f;
     }
 
     void Update()
@@ -98,6 +97,10 @@ public class Onlandcontroller : MonoBehaviour
             else if (!_playerDirection.Sprint || _playerStats.getStaminaMeter() == 0f
                     || !_playerDirection.Forward || _playerDirection.Backward)
                 stoppedSprinting();
+            if (_playerRb.angularVelocity.y > 0f && !_playerDirection.Right)
+                _playerRb.AddTorque(transform.up * -_rotationSpeed);
+            if (_playerRb.angularVelocity.y < 0f && !_playerDirection.Left)
+                _playerRb.AddTorque(transform.up * _rotationSpeed);
         }
     }
     
@@ -117,16 +120,16 @@ public class Onlandcontroller : MonoBehaviour
 
     void turnRight()
     {
-        _currentAngle += _rotationSpeed * Time.deltaTime;
-        Quaternion targetRotation = Quaternion.Euler(0, _currentAngle, 0);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 0.1f);
+        if (_playerRb.angularVelocity.y < 0f)
+            _playerRb.angularVelocity = new Vector3(0f, 0f, 0f);
+        _playerRb.AddTorque(transform.up * _rotationSpeed);
     }
 
     void turnLeft()
     {
-        _currentAngle -= _rotationSpeed * Time.deltaTime;
-        Quaternion targetRotation = Quaternion.Euler(0, _currentAngle, 0);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 0.1f);
+        if (_playerRb.angularVelocity.y > 0f)
+            _playerRb.angularVelocity = new Vector3(0f, 0f, 0f);
+        _playerRb.AddTorque(transform.up * -_rotationSpeed);
     }
 
     void startedSprinting()
