@@ -47,6 +47,3 @@ Enemies roam around the specific areas of the game, there are of two types, ship
   <img src="GIFs/CombatShip.gif" width = "500" height = "500">
   <img src="GIFs/LandCombat.gif" width = "500" height = "500">
 </div>
-
-### Crafting
-Feature wasn't made in time, however the game does intend to have crafting in its system to create tools and quest items.
